@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>書籍管理システム</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+    <!-- ヘッダー -->
+    <header class="header">
+        <div class="header-container">
+            <div class="header-left">
+                <h1 class="logo">
+                    <i class="fas fa-book"></i>
+                    <span>BookManager</span>
+                </h1>
+            </div>
+            <div class="header-right">
+                <button class="btn btn-primary" id="addBookBtn">
+                    <i class="fas fa-plus"></i>
+                    書籍を追加
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- メインコンテンツ -->
+    <main class="main">
+        <div class="container">
+            <!-- 統計カード -->
+            <section class="stats-section">
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-icon">
+                            <i class="fas fa-books"></i>
+                        </div>
+                        <div class="stat-content">
+                            <h3 class="stat-title">総書籍数</h3>
+                            <p class="stat-value" id="totalBooks">-</p>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon reading">
+                            <i class="fas fa-book-open"></i>
+                        </div>
+                        <div class="stat-content">
+                            <h3 class="stat-title">読書中</h3>
+                            <p class="stat-value" id="readingBooks">-</p>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon completed">
+                            <i class="fas fa-check-circle"></i>
+                        </div>
+                        <div class="stat-content">
+                            <h3 class="stat-title">読了済み</h3>
+                            <p class="stat-value" id="completedBooks">-</p>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon money">
+                            <i class="fas fa-yen-sign"></i>
+                        </div>
+                        <div class="stat-content">
+                            <h3 class="stat-title">総支出額</h3>
+                            <p class="stat-value" id="totalSpent">-</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- フィルター・検索セクション -->
+            <section class="filter-section">
+                <div class="filter-container">
+                    <div class="search-box">
+                        <i class="fas fa-search"></i>
+                        <input type="text" id="searchInput" placeholder="書籍名・著者名で検索...">
+                    </div>
+                    <div class="filter-controls">
+                        <select id="statusFilter" class="filter-select">
+                            <option value="">すべてのステータス</option>
+                            <option value="not_started">未読</option>
+                            <option value="reading">読書中</option>
+                            <option value="completed">読了</option>
+                            <option value="dropped">中断</option>
+                        </select>
+                        <select id="ratingFilter" class="filter-select">
+                            <option value="">すべての評価</option>
+                            <option value="5">⭐⭐⭐⭐⭐</option>
+                            <option value="4">⭐⭐⭐⭐</option>
+                            <option value="3">⭐⭐⭐</option>
+                            <option value="2">⭐⭐</option>
+                            <option value="1">⭐</option>
+                        </select>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 書籍リスト -->
+            <section class="books-section">
+                <div class="section-header">
+                    <h2 class="section-title">
+                        <i class="fas fa-list"></i>
+                        書籍一覧
+                    </h2>
+                    <div class="view-controls">
+                        <button class="view-btn active" data-view="grid">
+                            <i class="fas fa-th"></i>
+                        </button>
+                        <button class="view-btn" data-view="list">
+                            <i class="fas fa-list"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="books-container" id="booksContainer">
+                    <!-- 書籍カードがここに動的に追加される -->
+                </div>
+                <div class="pagination" id="pagination">
+                    <!-- ページネーションがここに追加される -->
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <!-- 書籍追加/編集モーダル -->
+    <div class="modal" id="bookModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title" id="modalTitle">書籍を追加</h3>
+                <button class="modal-close" id="modalClose">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <form class="modal-body" id="bookForm">
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="title" class="form-label">タイトル <span class="required">*</span></label>
+                        <input type="text" id="title" name="title" class="form-input" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="author" class="form-label">著者 <span class="required">*</span></label>
+                        <input type="text" id="author" name="author" class="form-input" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="isbn" class="form-label">ISBN</label>
+                        <input type="text" id="isbn" name="isbn" class="form-input">
+                    </div>
+                    <div class="form-group">
+                        <label for="publisher" class="form-label">出版社</label>
+                        <input type="text" id="publisher" name="publisher" class="form-input">
+                    </div>
+                    <div class="form-group">
+                        <label for="purchaseDate" class="form-label">購入日 <span class="required">*</span></label>
+                        <input type="date" id="purchaseDate" name="purchase_date" class="form-input" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="purchasePrice" class="form-label">購入価格（円）</label>
+                        <input type="number" id="purchasePrice" name="purchase_price" class="form-input" min="0">
+                    </div>
+                    <div class="form-group full-width">
+                        <label for="tags" class="form-label">タグ</label>
+                        <input type="text" id="tags" name="tags" class="form-input" placeholder="カンマ区切りで入力（例: プログラミング,技術書）">
+                    </div>
+                    <div class="form-group full-width">
+                        <label for="notes" class="form-label">メモ</label>
+                        <textarea id="notes" name="notes" class="form-textarea" rows="3"></textarea>
+                    </div>
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="btn btn-secondary" id="cancelBtn">キャンセル</button>
+                    <button type="submit" class="btn btn-primary" id="saveBtn">保存</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- 読書アクションモーダル -->
+    <div class="modal" id="readingModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title" id="readingModalTitle">読書を完了</h3>
+                <button class="modal-close" id="readingModalClose">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label for="rating" class="form-label">評価</label>
+                    <div class="rating-input">
+                        <input type="radio" name="rating" value="1" id="star1">
+                        <label for="star1">⭐</label>
+                        <input type="radio" name="rating" value="2" id="star2">
+                        <label for="star2">⭐</label>
+                        <input type="radio" name="rating" value="3" id="star3">
+                        <label for="star3">⭐</label>
+                        <input type="radio" name="rating" value="4" id="star4">
+                        <label for="star4">⭐</label>
+                        <input type="radio" name="rating" value="5" id="star5">
+                        <label for="star5">⭐</label>
+                    </div>
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="btn btn-secondary" id="readingCancelBtn">キャンセル</button>
+                    <button type="button" class="btn btn-primary" id="finishReadingBtn">完了</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ローディングオーバーレイ -->
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="loading-spinner">
+            <i class="fas fa-spinner fa-spin"></i>
+        </div>
+    </div>
+
+    <script src="/js/app.js"></script>
+</body>
+</html>
