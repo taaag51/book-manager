@@ -1,100 +1,115 @@
-# CLAUDE.md
+# CLAUDE.md - 📚 Go/Web初心者向けガイド
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+このファイルは、Claude Codeがこのリポジトリで作業する際のガイドです。
 
-## 重要な指示
+## 👋 初心者の方へ
 
-**必ず日本語で回答してください。** このプロジェクトで作業する際は、すべての説明、コメント、エラーメッセージを日本語で提供してください。
+**このプロジェクトはGo言語とWeb開発を学びたい初心者のための教材です。**
 
-## プロジェクト概要
+## 📚 プロジェクトの簡単説明
 
-個人向け書籍管理システム（REST API + Web UI）。Go言語とクリーンアーキテクチャで実装された、書籍の購入・読書進捗管理アプリケーション。WebUIとREST APIの両方を提供。
+これは個人用の「書籍管理アプリ」です。
+- 書籍を登録して、読書進捗を管理できます
+- Go言語で書かれたバックエンド（サーバー側）とHTML/CSS/JavaScriptのフロントエンド（ブラウザ側）があります
 
-## 主要コマンド
+## 📋 よく使うコマンド
 
-### 開発・実行
-- `go run cmd/main.go` - アプリケーション実行（ポート8080で起動）
-- `go build -o book-manager cmd/main.go` - バイナリビルド
-- `go mod download` - 依存関係の取得
+### 🚀 アプリを動かす
+```bash
+# アプリを開始（ポート8080で起動）
+go run cmd/main.go
 
-### テスト・検証
-- `go test ./...` - 全テスト実行
-- `go test ./internal/model` - 特定パッケージのテスト実行
-- `curl http://localhost:8080/api/v1/health` - ヘルスチェック
-
-### WebUI アクセス
-- `http://localhost:8080` - ブラウザでWebUI表示
-- `http://localhost:8080/api/v1` - REST APIベースURL
-
-### データベース
-- データベースファイル: `./books.db` (SQLite)
-- マイグレーション: アプリ起動時に自動実行
-
-## アーキテクチャ
-
-### クリーンアーキテクチャ（4層構造）
-1. **Model層** (`internal/model/`) - データ構造定義、バリデーションルール
-2. **Repository層** (`internal/repository/`) - データアクセス、SQLクエリ実装
-3. **Usecase層** (`internal/usecase/`) - ビジネスロジック、統計処理
-4. **Handler層** (`internal/handler/`) - HTTP処理、REST API エンドポイント
-
-### 依存関係の流れ
-```
-Handler → Usecase → Repository → Database
-  ↓         ↓         ↓
-Model   ←  Model   ←  Model
+# ブラウザで以下にアクセス
+# http://localhost:8080
 ```
 
-### 主要コンポーネント
-- **Database**: SQLite with embedded migration
-- **Router**: Gorilla Mux with CORS middleware
-- **Models**: Book entity with reading status lifecycle
-- **Validation**: go-playground/validator for request validation
+### 📦 その他のコマンド
+```bash
+# ライブラリをインストール
+go mod download
 
-## データモデルの特徴
+# テストを実行
+go test ./...
 
-### Book Entity
-- **読書ステータス**: `not_started` → `reading` → `completed`/`dropped`
-- **自動日付管理**: ステータス変更時に読書開始・終了日を自動設定
-- **統計計算**: 月次統計、平均評価、総支出額の自動計算
+# サーバーが動いているか確認
+curl http://localhost:8080/api/v1/health
+```
 
-### Repository Pattern
-- インターフェース定義による疎結合
-- 動的クエリ構築によるフィルタリング機能
-- ページネーション対応
+### 💾 データはどこに保存される？
+- ファイル: `./books.db` (SQLiteデータベース)
+- アプリ起動時に自動で作成されます
 
-## 環境設定
+## 🏠 アプリの構成（初心者向け）
 
-| 環境変数 | デフォルト | 説明 |
-|---------|-----------|------|
-| `PORT` | 8080 | HTTPサーバーポート |
-| `DB_PATH` | ./books.db | SQLiteデータベースファイルパス |
+このアプリは「4層構成」というきれいな作りになっています：
 
-## API設計パターン
+### 📁 フォルダの意味
+1. **`internal/model/`** - データの形（書籍の情報をどう保存するか）
+2. **`internal/repository/`** - データベースとのやり取り（保存・取得）
+3. **`internal/usecase/`** - アプリのルール（「読書中の本は再度開始できない」など）
+4. **`internal/handler/`** - Webブラウザからのリクエストを処理
 
-### RESTful エンドポイント
-- **書籍CRUD**: `/api/v1/books`
-- **読書管理**: `/api/v1/books/{id}/start-reading`, `/api/v1/books/{id}/finish-reading`
+### 🔄 情報の流れ
+```
+ブラウザ → Handler → Usecase → Repository → データベース
+```
+
+例：ブラウザで「書籍一覧」を見るとき
+1. Handlerがリクエストを受け取る
+2. Usecaseが「一覧を表示するルール」を実行
+3. Repositoryがデータベースから書籍データを取得
+4. 取得したデータをブラウザに返す
+
+## 📚 書籍データの特徴
+
+### 📈 読書ステータスの変化
+```
+未読 → 読書中 → 読了 or 中断
+```
+- 本を購入したら「未読」
+- 読み始めたら「読書中」
+- 読み終えたら「読了」または「中断」
+
+### 🕰️ 自動日付記録
+- 読書を開始すると、自動で開始日を記録
+- 読書を完了すると、自動で終了日を記録
+
+### 📊 統計機能
+- 今月何冊読んだか
+- 本にいくら使ったか
+- 平均評価は何点か
+
+## ⚙️ 設定変更（上級者向け）
+
+環境変数で設定を変更できます：
+
+| 設定項目 | 環境変数 | デフォルト | 説明 |
+|---------|-----------|------------|------|
+| ポート番号 | `PORT` | 8080 | アプリが使うポート番号 |
+| データベース | `DB_PATH` | ./books.db | データが保存される場所 |
+
+## 🔗 APIの使い方（上級者向け）
+
+### 主要なURL
+- **書籍管理**: `/api/v1/books`
+- **読書開始**: `/api/v1/books/{id}/start-reading`
+- **読書完了**: `/api/v1/books/{id}/finish-reading`
 - **統計情報**: `/api/v1/statistics`
 
-### レスポンス形式
-- 成功: `{"message": "", "data": {...}}`
-- エラー: `{"error": "", "message": ""}`
+### 検索機能
+著者、出版社、タグ、ステータス、評価、キーワードで検索できます。
 
-### フィルタリング
-複数条件での書籍検索をサポート（著者、出版社、タグ、ステータス、評価、全文検索）
+## ⚠️ 開発時のポイント
 
-## 開発時の注意点
+### 💾 データベースについて
+- アプリ起動時に自動でテーブルが作成されます
+- データベースの設計は `internal/database/migration.sql` に書かれています
 
-### データベースマイグレーション
-- `internal/database/migration.sql` に全スキーマ定義
-- アプリ起動時に自動実行（冪等性保証）
+### ✅ 入力チェック
+- 書籍登録時：タイトル、著者、購入日は必須
+- 評価：1点から5点まで
+- 購入日：未来の日付は入力できません
 
-### バリデーション
-- 作成時: title, author, purchase_date は必須
-- 評価: 1-5の範囲チェック
-- 日付: 購入日の未来日チェック
-
-### ログ・監視
-- リクエストログ自動出力
-- グレースフルシャットダウン対応
+### 📜 ログ
+- アクセスログが自動で出力されます
+- Ctrl+Cで終了時、安全にシャットダウンします
